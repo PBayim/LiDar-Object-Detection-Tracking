@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "lidar-sensor-fusion"
+version = "0.1.0"
+description = ""
+authors = ["PatrickBayim-KS <165992384+PatrickBayim-KS@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pandas = "^2.2.3"
+open3d = "^0.19.0"
+
+[tool.poetry.scripts]
+main = "scripts.sanity_check.main:start"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
