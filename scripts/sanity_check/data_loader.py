@@ -36,7 +36,7 @@ class LidarDataLoader:
             for filename in files:
                 if filename.lower().endswith(".csv"):
                     filepath = os.path.join(root, filename)
-                    print(filename)
+                    # print(filename)
                     df = pd.read_csv(filepath, delimiter=";")
                     dataframes.append(df)
                     

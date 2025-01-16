@@ -45,6 +45,39 @@ A frame rate of up to 30 Hz aligns well with real-time processing requirements f
 - Requirement: Hgher frame rates (20-30Hz or more) are typically desired for dynamic scenes. A sufficiently dense point cloud aids in precise obstacle detection and tracking. 
 - Blickfeld Cube 1 Alignment: The 1-30Hz adjustable frame rate offers the flexibility to balance point cloud density with computational overhead. Over 500 scanlines per second produce a point cloud of respectable density, supporting reliable perception tasks (Teichman et al., 2011)
 
+# 2. Implementation 
+
+Notes: T.B.D
+
+## 2.2 First assessment and sanity check 
+
+In this step, we conducted a series of automated checks to verify the integrity, structure, and basic statistical properties of our LiDAR data before proceeding with any advanced analyses (e.g., spatial consistency checks, object detection). These checks included verifying the presence of required columns (Header Check), ensuring timestamps move forward in time (Timestamp Check), and examining numerical columns for anomalies (Range Check and Statistic(s) Check). Below is a summary of our observations and findings for the first set of LiDAR packets (the “part1” folder).
+
+### Header Check
+Each LiDAR CSV file was confirmed to have all the required columns (X, Y, Z, DISTANCE, INTENSITY, POINT_ID, RETURN_ID, AMBIENT, TIMESTAMP). None of the frames displayed missing headers, and no unexpected or extraneous headers were encountered. This indicates our dataset is consistently structured, matching the specified schema and avoiding parsing complications.
+
+### Timestamp Check
+In every DataFrame, the TIMESTAMP column was present and strictly non-decreasing. The logs show that each check produced a passed = True result and contained no warning messages. This confirms that time-series data for LiDAR packets is logically ordered and can be relied upon for further time-based analyses or sensor fusion tasks.
+
+### Range Check
+The Range Check output frequently appears as None, reflecting that it was either omitted for these frames or did not flag values as out of bounds given the constraints (5–250 meters). Since our dataset spans distances typically between roughly 5 m and 250+ m, any negative or zero distances might warrant further scrutiny—but here, no immediate range violations were reported for these frames in part1. We note one instance of a slightly negative value (e.g., 
+−
+21.37
+−21.37 in one frame), which suggests investigating sensor offsets or outlier processing in future steps if needed.
+
+### Statistic(s) Check
+The StatisticsCheck module evaluated key numeric columns—focusing especially on DISTANCE and INTENSITY—to detect extreme outliers via z-score analysis. In all inspected DataFrames:
+
+DISTANCE consistently had a minimum slightly above 5 m (or in rare cases, a small negative or near-zero reading), and a maximum often in the range of 100–259 m for certain frames. The outlier ratio was between roughly 1.3% and 1.6%, staying below typical concern thresholds (e.g., 2–5% or higher might require a deeper look).
+INTENSITY spanned from 5 up to values in the 100–300+ range (depending on frame), with only a small fraction of outliers (about 0.6–0.7%) flagged by the z-score method. The majority of intensity data thus fell within a plausible distribution, suggesting no major sensor saturations or spurious artifacts at this stage.
+Overall, these checks confirm that the LiDAR data in the “part1” folder is structurally coherent (headers intact, timestamps valid) and statistically reasonable (outlier ratios remain low, distributions appear stable). A minor point is the occasional negative or very low DISTANCE reading, which may arise from sensor or calibration nuances. However, nothing in the current results indicates systemic corruption or unrecoverable errors in the dataset. This successful completion of our first-round sanity checks provides confidence that subsequent steps—such as spatial consistency checks, ground estimation, or full 3D object detection—can proceed on a firm footing.
+
+
+
+
+
+
+
 
 
 
