@@ -21,13 +21,14 @@ class SpatialConsistencyCheck(BaseCheck):
         ground_tolerance=0.5
     ):
         """
-        :param x_col, y_col, z_col: Names of the coordinate columns.
-        :param bounding_box_limits: Optional 6-tuple (xmin, xmax, ymin, ymax, zmin, zmax)
+        Args: 
+        x_col, y_col, z_col: Names of the coordinate columns.
+        bounding_box_limits: Optional 6-tuple (xmin, xmax, ymin, ymax, zmin, zmax)
                                    used for bounding-box checks.
-        :param expected_ground_z: If set, we do a rough check that the lowest points
+        expected_ground_z: If set, we do a rough check that the lowest points
                                   in the cloud are near this Z-value. (e.g., 0.0 if the
                                   LiDAR is at some known height above the ground plane).
-        :param ground_tolerance: Allowed +/- difference for 'ground' checks.
+        ground_tolerance: Allowed +/- difference for 'ground' checks.
                                  (e.g., 0.5 → ±0.5 around expected_ground_z).
         """
         self.x_col = x_col
@@ -43,8 +44,8 @@ class SpatialConsistencyCheck(BaseCheck):
         2. (Optional) Checks bounding-box constraints if bounding_box_limits is provided.
         3. (Optional) If expected_ground_z is set, check that the bottom ~10% of points
            are near that level (rough ground-plane check).
-
-        :param df: A DataFrame representing a LiDAR frame or CSV file.
+        
+        df: A DataFrame representing a LiDAR frame or CSV file.
         :return: A dictionary with pass/fail info and descriptive messages.
         """
         result = {

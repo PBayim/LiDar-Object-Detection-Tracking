@@ -1,7 +1,7 @@
 
 # 1. Introduction 
 
-Autonomous driving systems rely heavily on robust sensing modalities, with LiDAR (Light Detection and Ranging) emerging as a cornerstone technology for environmental perception. The Blickfeld Cube 1 LiDAR, with its compact form factor and extensive detection range, aims to address the challenges of detection, tracking, and real-time decision-making. In this use case, we will first review the device by exploring its key specififications and evaluate how their alighment with self-driving car requirments. Further, we will outline the implementation process in Python, including initial sanity testing and the development of object detection and tracking algorithms. 
+Autonomous driving systems rely heavily on robust sensing modalities, with LiDAR (Light Detection and Ranging) emerging as a cornerstone technology for environmental perception. The Blickfeld Cube 1 LiDAR, with its compact form factor and extensive detection range, aims to address the challenges of detection, tracking, and real-time decision-making. In this use case, we will first review the device by exploring its key specififications and evaluate howe implementation process in Python, including initial sanity testing and the development of object detection and tracking algorithms. 
 
 ## 1.1 Overview of the Blickfeld Cube 1 specifications 
 
@@ -9,7 +9,7 @@ Autonomous driving systems rely heavily on robust sensing modalities, with LiDAR
 - Dimensions: 60 x 82 x 50 mm
 - Wight: 275 g
 
-The sensors7s relatively small size and moderate weight enable flexible mounting options. For self-driving vehicles, compact sensors reduce aerodynamic drag, simplify placement (e.g, rooftop, bumper, or side mirrors), and help maintain an unobtrusivve exterior design (Seif & Hu, 2016). 
+The sensors's relatively small size and moderate weight enable flexible mounting options. For self-driving vehicles, compact sensors reduce aerodynamic drag, simplify placement (e.g, rooftop, bumper, or side mirrors), and help maintain an unobtrusivve exterior design (Seif & Hu, 2016). 
 
 ### Detection capabilities
 - Detection range:  5m ~ 250m
@@ -49,39 +49,52 @@ A frame rate of up to 30 Hz aligns well with real-time processing requirements f
 
 Notes: T.B.D
 
-## 2.2 First assessment and sanity check 
+## 2.1 First assessment and sanity check 
 
-In this step, we conducted a series of automated checks to verify the integrity, structure, and basic statistical properties of our LiDAR data before proceeding with any advanced analyses (e.g., spatial consistency checks, object detection). These checks included verifying the presence of required columns (Header Check), ensuring timestamps move forward in time (Timestamp Check), and examining numerical columns for anomalies (Range Check and Statistic(s) Check). Below is a summary of our observations and findings for the first set of LiDAR packets (the “part1” folder).
+In this step, we conducted a series of automated checks to verify the integrity, structure, and basic statistical properties of our LiDAR data before proceeding with any advanced processes (e.g., object detection, object tracking). These checks included verifying the presence of required columns (Header Check), ensuring timestamps move forward in time (Timestamp Check), and examining numerical columns for anomalies (Range Check and Statistic(s) Check). Below is a summary of our observations and findings. 
 
 ### Header Check
-Each LiDAR CSV file was confirmed to have all the required columns (X, Y, Z, DISTANCE, INTENSITY, POINT_ID, RETURN_ID, AMBIENT, TIMESTAMP). None of the frames displayed missing headers, and no unexpected or extraneous headers were encountered. This indicates our dataset is consistently structured, matching the specified schema and avoiding parsing complications.
+Each LiDAR CSV file was confirmed to have all the required columns `(X, Y, Z, DISTANCE, INTENSITY, POINT_ID, RETURN_ID, AMBIENT, TIMESTAMP)`. None of the frames displayed missing headers, and no unexpected or extraneous headers were encountered. This indicates our dataset is consistently structured, matching the specified schema and avoiding parsing complications.
 
 ### Timestamp Check
-In every DataFrame, the TIMESTAMP column was present and strictly non-decreasing. The logs show that each check produced a passed = True result and contained no warning messages. This confirms that time-series data for LiDAR packets is logically ordered and can be relied upon for further time-based analyses or sensor fusion tasks.
+In every DataFrame, the TIMESTAMP column was present and strictly non-decreasing. The logs show that each check produced a `passed = True` result and contained no warning messages. This confirms that time-series data for LiDAR packets is logically ordered and can be relied upon for further time-based analyses or sensor fusion tasks.
 
 ### Range Check
-The Range Check output frequently appears as None, reflecting that it was either omitted for these frames or did not flag values as out of bounds given the constraints (5–250 meters). Since our dataset spans distances typically between roughly 5 m and 250+ m, any negative or zero distances might warrant further scrutiny—but here, no immediate range violations were reported for these frames in part1. We note one instance of a slightly negative value (e.g., 
-−
-21.37
-−21.37 in one frame), which suggests investigating sensor offsets or outlier processing in future steps if needed.
+The Range Check output frequently appears as `None`, reflecting that it was either omitted for these frames or did not flag values as out of bounds given the constraints (5–250 meters). Since our dataset spans distances typically between roughly 5 m and 250+ m, any negative or zero distances might warrant further scrutiny—but here, no immediate range violations were reported for these frames in part1. 
 
 ### Statistic(s) Check
-The StatisticsCheck module evaluated key numeric columns—focusing especially on DISTANCE and INTENSITY—to detect extreme outliers via z-score analysis. In all inspected DataFrames:
+The StatisticsCheck module evaluated key numeric columns—focusing especially on `DISTANCE` and `INTENSITY`—to detect extreme outliers via `z-score` and `IQR` (Interquartile range) analysis. In all inspected DataFrames:
 
-DISTANCE consistently had a minimum slightly above 5 m (or in rare cases, a small negative or near-zero reading), and a maximum often in the range of 100–259 m for certain frames. The outlier ratio was between roughly 1.3% and 1.6%, staying below typical concern thresholds (e.g., 2–5% or higher might require a deeper look).
-INTENSITY spanned from 5 up to values in the 100–300+ range (depending on frame), with only a small fraction of outliers (about 0.6–0.7%) flagged by the z-score method. The majority of intensity data thus fell within a plausible distribution, suggesting no major sensor saturations or spurious artifacts at this stage.
-Overall, these checks confirm that the LiDAR data in the “part1” folder is structurally coherent (headers intact, timestamps valid) and statistically reasonable (outlier ratios remain low, distributions appear stable). A minor point is the occasional negative or very low DISTANCE reading, which may arise from sensor or calibration nuances. However, nothing in the current results indicates systemic corruption or unrecoverable errors in the dataset. This successful completion of our first-round sanity checks provides confidence that subsequent steps—such as spatial consistency checks, ground estimation, or full 3D object detection—can proceed on a firm footing.
-
+`DISTANCE` consistently had a minimum slightly above 5 m (or in rare cases, a small negative or near-zero reading), and a maximum often in the range of 100–259 m for certain frames. The outlier ratio was between roughly 1.3% and 1.6%, staying below typical concern thresholds (e.g., 2–5% or higher might require a deeper look).
+`INTENSITY` spanned from 5 up to values in the 100–300+ range (depending on frame), with only a small fraction of outliers (about 0.6–0.7%) flagged by the z-score method. The majority of intensity data thus fell within a plausible distribution, suggesting no major sensor saturations or spurious artifacts at this stage.
 
 
+Overall, these checks confirm that the LiDAR data  is structurally coherent (headers intact, timestamps valid) and statistically reasonable (outlier ratios remain low, distributions appear stable). A minor point is the occasional negative or very low DISTANCE reading, which may arise from sensor or calibration nuances. However, nothing in the current results indicates systemic corruption or unrecoverable errors in the dataset. 
+
+
+## 2.2 Dataframes Conversion to PCD format files 
+ 
+ In order to ease and streamline further point clouds processings (object detection & tracking), we implemented a `DFToPCDConverter` class, responsible to convert Dataframes to `.pcd` files in the `ascii` data mode. Below is an example of a resulting output. 
+ ![converted PCD](images/pcd_converted.png) 
+
+
+## 2.3 Object detection 
+T.B.D 
+
+# Annexes
+
+### Github repository 
+- [Lidar-Object-Detection-Tracking](https://github.com/PBayim/LiDar-Object-Detection-Tracking)
+### Sanity checks results 
+- [part1](/docs/checks_terminal_outputs/part1.md)
+- [part2](/docs/checks_terminal_outputs/part2.md)
+- [part3](/docs/checks_terminal_outputs/part3.md)
+- [part4](/docs/checks_terminal_outputs/part4.md)
 
 
 
 
-
-
-
-## References
+# References
 - Angerer, H., Nowozin, S., & Raji, D. (2017). Profiling Real-Time Systems for Autonomous Driving Applications. In Proceedings of the IEEE International Conference on Robotics and Automation (ICRA). IEEE.
 - Blickfeld GmbH. (2023). Blickfeld Cube 1 Specifications. Retrieved from https://www.blickfeld.com
 - Chen, X., et al. (2017). Multi-view 3D Object Detection Network for Autonomous Driving. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 1907–1915). IEEE.
