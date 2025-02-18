@@ -16,9 +16,13 @@ mayavi = "^4.8.2"
 spconv = "^2.3.8"
 pip = "^25.0"
 pybind11 = "^2.13.6"
+ply = "^3.11"
+scikit-learn = "^1.6.1"
+openmim = "^0.3.9"
+
 
 [tool.poetry.scripts]
-main = "scripts.sanity_check.main:start"
+main = "scripts.main.main:start"
 
 [build-system]
 requires = ["poetry-core"]

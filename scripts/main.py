@@ -78,4 +78,4 @@ def main(convert: bool = False, data_dir: str = "../data/192.168.26.26_2020-11-2
 
 
 if __name__ == "__main__":
-    main(convert=True, data_dir= "../data/192.168.26.26_2020-11-25_20-01-45_frame-2566_part_4")
+    main(convert=True, data_dir= "../data/192.168.26.26_2020-11-25_20-01-45_frame-2414_part_3")
