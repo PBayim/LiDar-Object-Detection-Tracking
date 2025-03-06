@@ -7,8 +7,10 @@ from sanity_check.checks.timestamp_check import TimestampCheck
 from sanity_check.checks.statistics_check import StaticticsCheck
 from sanity_check.checks.spatial_consistency_check import SpatialConsistencyCheck
 from utils.df_pcd_converter import DFToPCDConverter
+from utils.pcd_to_bin_converter import PCDToBINConverter
+import os, glob
 
-def main(convert: bool = False, data_dir: str = "../data/192.168.26.26_2020-11-25_20-01-45_frame-2566_part_4"):
+def main(convert_csv: bool = False, convert_pcd = False, data_dir: str = "../data/192.168.26.26_2020-11-25_20-01-45_frame-2566_part_4"):
     # 1. Load data 
     loader = LidarDataLoader(data_dir)
     dataframes = loader.load_data()
@@ -62,7 +64,7 @@ def main(convert: bool = False, data_dir: str = "../data/192.168.26.26_2020-11-2
         # Spatial consistency check 
         # sp_result = sp_check.run_check(df=df)
         # print("Spatial Check : ", sp_result)
-        if convert:
+        if convert_csv:
             outname = f"{data_dir}/frame_{i}.pcd"
             converter = DFToPCDConverter(
                 df=df,
@@ -75,7 +77,22 @@ def main(convert: bool = False, data_dir: str = "../data/192.168.26.26_2020-11-2
                 data_mode="ascii"
             )
             converter.run_conversion()
+        
+        if convert_pcd: 
+            pcd_files = glob.glob(os.path.join(data_dir, "*.pcd"))
+            
+            if not pcd_files:
+                print(f"No .pcd files found in : {data_dir}")
+        
+            for pcd_file in pcd_files:
+                # Derive the corresponding .bin path
+                base_name = os.path.splitext(os.path.basename(pcd_file))[0]
+                bin_path = os.path.join(data_dir, f"{base_name}.bin")
+                
+                # Create converter and run 
+                convert_pcd = PCDToBINConverter(pcd_file, bin_path)
+                convert_pcd.run_conversion()
 
 
 if __name__ == "__main__":
-    main(convert=True, data_dir= "../data/192.168.26.26_2020-11-25_20-01-45_frame-2414_part_3")
+    main(convert_csv=False, convert_pcd=True, data_dir= "../data/192.168.26.26_2020-11-25_20-01-45_frame-1899_part_1")
