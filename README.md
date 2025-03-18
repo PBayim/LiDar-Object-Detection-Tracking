@@ -21,7 +21,7 @@
 
 - Success requirements 
     - Develop an algorithm, which fulfils the task for verification and validation
-    - The desired performance for our approach is a correct classification rate of 0.99 and a false alarm
+    - The desired performance for the approach is a correct classification rate of 0.99 and a false alarm
 rate of 0.01 per hour.
 
 ## 2- How to run (T.B.D)

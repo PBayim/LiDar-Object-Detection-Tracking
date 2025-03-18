@@ -1,2 +1,3 @@
 from .df_pcd_converter import DFToPCDConverter
 from .pcd_to_bin_converter import PCDToBINConverter
+from .text_file_reader import TextFileReader
