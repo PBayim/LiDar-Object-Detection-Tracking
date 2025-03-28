@@ -11,7 +11,10 @@ from sanity_check.checks.spatial_consistency_check import SpatialConsistencyChec
 from utils.df_pcd_converter import DFToPCDConverter
 from utils.pcd_to_bin_converter import PCDToBINConverter
 from utils.text_file_reader import TextFileReader
-from inference.model_inference import Mmdet3DModel
+# from inference.model_inference import OpenPCDetDetector
+from OpenPCDet.tools.inference import OpenPCDetDetector
+import argparse
+
 
 
 def main(sanity_check : bool = False, convert_csv: bool = False, convert_pcd = False, inference : bool = False, data_dir: str = "../data/192.168.26.26_2020-11-25_20-01-45_frame-2566_part_4"):
@@ -122,26 +125,37 @@ def main(sanity_check : bool = False, convert_csv: bool = False, convert_pcd = F
                         txt_file.close()
                         break 
     else: # If we are inferencing 
+        
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--cfg_file', type=str, required=False, help='Path to .yaml config')
+        parser.add_argument('--ckpt_file', type=str, required=False, help='Path to .pth checkpoint')
+        parser.add_argument('--data_path', type=str, required=False, help='Folder or file containing .bin')
+        parser.add_argument('--device', type=str, default='cuda:0')
+        parser.add_argument('--score_thresh', type=float, default=0.1)
+        parser.add_argument('--ext', type=str, default='.bin')
+        
+        args = parser.parse_args()
         # We assume the bin folder and files exist already
         bin_folder = data_dir + "/data/kitti/testing/ImageSets"
-        bin_file = os.path.join()(bin_folder, "test.txt")
+        bin_files_path = os.path.join(bin_folder, "test.txt")
         
-        text_reader = TextFileReader(bin_file)  
-        lines = text_reader.read_lines()     
+        text_reader = TextFileReader(bin_files_path)  
+        bin_files = text_reader.read_lines()     
         
-        # MMDetection 3D using PointPillars 
-        pointpillar_model = Mmdet3DModel(
-            config_file="configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py",
-            checkpoint_file="inference/models/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class_20220301_150306-37dc2420.pth",
+        print(f"First bin file path: {bin_files[0]}")
+        data_path = data_dir + "/data/kitti/testing/velodyne"
+        
+        detector = OpenPCDetDetector(
+            cfg_file="cfgs/kitti_models/pointpillar.yaml",
+            ckpt_file="inference/models/pointpillar_7728.pth",
+            data_path=data_path,
             device="cuda:0",
-            score_thr=0.1
+            score_thresh=0.1
         )
-        # config_file = "configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py"
-        # checkpoint_file = "hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class_20200808_134619-6f75d0f7.pth"             
+        # Just show bounding boxes for one frame
+        results = detector.run_inference(show_vis=True)
+        print("All frames processed, results length = ", len(results))
 
-        results, data = pointpillar_model.detect_frame(lines[0])
-        
-        print(f"results : {results} \n data : {data}")
         
         
 if __name__ == "__main__":

@@ -15,5 +15,5 @@ class TextFileReader:
             for line in file:
                 line_stripped = line.strip()
                 if line_stripped:
-                    lines_list.append()
+                    lines_list.append(line_stripped)
         return lines_list
